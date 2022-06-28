@@ -1,0 +1,19 @@
+Board: ESP8266
+
+PH Sensor (PH-4502C)
+To	-
+Do	-
+Po	A0
+G	-
+G	GND
+V+	5V
+
+2 Relay Set
+GND	GND
+In1	GPIO 04
+In2	GPIO 05
+VCC	5V
+
+Infos
+- Short BNC prob of PH-4502C module to get voltage at PH 7.
+- Offset potentiometer near the BNC prob.
