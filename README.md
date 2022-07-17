@@ -25,9 +25,9 @@ http://arduino.esp8266.com/stable/package_esp8266com_index.json
 | Relay     | Micro                 |
 | --------- | --------------------- |
 | GND       | GND                   |
-| In1       | GPIO03 / RX (Mixer)   |
-| In2       | GPIO04 / D2 (Asam)    |
-| In3       | GPIO05 / D1 (Basa)    |
+| In1       | GPIO 03 / RX (Mixer)   |
+| In2       | GPIO 04 / D2 (Asam)    |
+| In3       | GPIO 05 / D1 (Basa)    |
 | In4       | -                     |
 | VCC       | 5V                    |
 
