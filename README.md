@@ -1,7 +1,7 @@
 ## Board
 
 ```
-ESP8266 (WeMos D1 Mini)
+Generic ESP8266 Module (WeMos D1 Mini)
 ```
 
 ## ESP8266 Board Manager URL
