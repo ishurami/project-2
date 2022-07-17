@@ -1,4 +1,8 @@
-Board: ESP8266 (WeMos D1 Mini)
+Board:
+ESP8266 (WeMos D1 Mini)
+
+ESP8266 Board Manager URL:
+http://arduino.esp8266.com/stable/package_esp8266com_index.json
 
 PH Sensor (PH-4502C)
 To	-
