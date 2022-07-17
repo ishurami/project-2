@@ -1,4 +1,4 @@
-const int RELAY1_PIN = 27;
+const int RELAY1_PIN = 4;
 const int RELAY2_PIN = 5;
 
 unsigned long start_time = 0;

@@ -16,27 +16,26 @@ const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
 WiFiClient  client;
 
 #define PH_METER_PIN A0
-const int MIXER_MOTOR_PIN = 3;
 const int ASAM_MOTOR_PIN = 4;
 const int BASA_MOTOR_PIN = 5;
 
 const float pHSet = 7;
 const float pHTolerance = 0.5;
-const float referenceVoltage = 3.3; // 3.3 for ESP8266 and ESP32 | 5 for Arduino Uno
-const int onTimeMotor = 500;  // Time for motor to supply liquid in Milisecond
+const float referenceVoltage = 3.3;
+const int onTimeMotor = 500;  // Milisecond
 
 // Calibration variable
-// The value of PH4 and PH7 must be calibrated before use to get the precise value
-const float PH4 = 3.29;
-const float PH7 = 2.69;
-const float PH10 = 2.20;  // Not really used
+const float PH4 = 3.03;  // 1024
+const float PH7 = 2.68;  // 834
+const float PH10 = 2.20;  // 
 const float pHStep = (PH4 - PH7) / 3;
+
+unsigned long int avgValue;
+int buf[10], temp;
 
 float pHVal = 0;
 float pHVoltage = 0;
 int encodedVal;
-unsigned long int avgValue;
-int buf[100], temp;
 
 unsigned long startTime = 0;
 unsigned long prevGetPHValue = 0;
@@ -58,14 +57,13 @@ void setupWifi() {
   }
 }
 
-unsigned long int getAveragePHValue() {
-  for (int i = 0; i < 100; i++) {
+void getPHValue() {
+  for (int i = 0; i < 10; i++) {
     buf[i] = analogRead(PH_METER_PIN);
     delay(10);
   }
-  
-  for (int i = 0; i < 100-1; i++) {
-    for (int j = i + 1; j < 100; j++) {
+  for (int i = 0; i < 9; i++) {
+    for (int j = i + 1; j < 10; j++) {
       if (buf[i] > buf[j]) {
         temp = buf[i];
         buf[i] = buf[j];
@@ -73,57 +71,47 @@ unsigned long int getAveragePHValue() {
       }
     }
   }
-  
   avgValue = 0;
-  
-  for (int i = 24; i < 24+50; i++) {
+  for (int i = 2; i < 8; i++) {
     avgValue += buf[i];
   }
-  
-  return avgValue /= 50;
-}
-
-void getPHValue() {
-  encodedVal = getAveragePHValue();
-  pHVoltage = encodedVal * (referenceVoltage / 1024);
-  pHVal = 7 + ((PH7 - pHVoltage) / pHStep);
-  Serial.print("ADC Val: ");
-  Serial.print(encodedVal);
-  Serial.print(" | PH Vol: ");
-  Serial.print(pHVoltage);
-  Serial.print(" | PH: ");
-  Serial.print(pHVal);
-  pHStatus = String("PH in tolerance range.");
-  prevGetPHValue = millis();
+//  float pHVol = (float) avgValue * 3.3 / 1024 / 6;
+  float pHVol = (float) (avgValue * 3.3 / 1024 / 6);
+  float pHValue =  -5.70 * pHVol + 21.34;
+  Serial.print("pHVol = ");
+  Serial.print(pHVol);
+  Serial.print(" | pHValue = ");
+  Serial.println(pHValue);
+  delay(20);
+//  encodedVal = analogRead(PH_METER_PIN);
+//  pHVoltage = encodedVal * (referenceVoltage / 1024);
+//  pHVal = 7 + ((PH7 - pHVoltage) / pHStep);
+//  Serial.print(encodedVal);
+//  Serial.print(" - ");
+//  Serial.print(pHVoltage);
+//  Serial.print(" - ");
+//  Serial.print(pHVal);
+////  pHStatus = String("PH in tolerance range: " + pHVal);
+//  pHStatus = String("PH in tolerance range.");
+//  prevGetPHValue = millis();
 }
 
 bool isPHBelowTolerance() {
-  if (pHVal < (pHSet - pHTolerance)) {
-    Serial.print(" - (");
-    Serial.print(pHSet - pHTolerance);
-    Serial.print(") Below");
+//  if (pHVal < (pHSet - pHTolerance)) return true;
+  if (pHVoltage < 2.70) {
+    Serial.print(" - Below");
     return true;
   }
-  
   return false;
 }
 
 bool isPHAboveTolerance() {
-  if (pHVal > (pHSet + pHTolerance)) {
-    Serial.print(" - (");
-    Serial.print(pHSet + pHTolerance);
-    Serial.print(") Above");
+//  if (pHVal > (pHSet - pHTolerance)) return true;
+  if (pHVoltage > 2.90) {
+    Serial.print(" - Above");
     return true;
   }
-  
   return false;
-}
-
-void mixLiquid() {
-  digitalWrite(MIXER_MOTOR_PIN, LOW);
-  Serial.print(" - Mixing liquid");
-  delay(5000);
-  digitalWrite(MIXER_MOTOR_PIN, HIGH);
 }
 
 void addAsamLiquid() {
@@ -132,7 +120,6 @@ void addAsamLiquid() {
   digitalWrite(ASAM_MOTOR_PIN, LOW);
   delay(onTimeMotor);
   digitalWrite(ASAM_MOTOR_PIN, HIGH);
-  mixLiquid();
 }
 
 void addBasaLiquid() {
@@ -141,7 +128,6 @@ void addBasaLiquid() {
   digitalWrite(BASA_MOTOR_PIN, LOW);
   delay(onTimeMotor);
   digitalWrite(BASA_MOTOR_PIN, HIGH);
-  mixLiquid();
 }
 
 
@@ -156,8 +142,7 @@ void sendDataToThingspeak() {
   } else{
     Serial.println("Problem updating channel. HTTP error code " + String(statusCode));
   }
-
-  pHStatus = String("Adding base liquid...");  
+  
   prevSentDataTime = millis();
 }
 
@@ -165,10 +150,8 @@ void sendDataToThingspeak() {
 void setup() {
   Serial.begin(9600);
   
-  pinMode(MIXER_MOTOR_PIN, OUTPUT);
   pinMode(ASAM_MOTOR_PIN, OUTPUT);
   pinMode(BASA_MOTOR_PIN, OUTPUT);
-  digitalWrite(MIXER_MOTOR_PIN, HIGH); 
   digitalWrite(ASAM_MOTOR_PIN, HIGH); 
   digitalWrite(BASA_MOTOR_PIN, HIGH);
   
@@ -178,23 +161,28 @@ void setup() {
 
 // Loop
 void loop() {
-  startTime = millis();
-
-  setupWifi();
-
-  if ((startTime - prevSentDataTime) >= 15000) {
-    getPHValue(); 
-    
-    if (isPHBelowTolerance()) {
-      // Liquid is Acid
-      addBasaLiquid();
-    } else if (isPHAboveTolerance()) {
-      // Liquid is Base
-      addAsamLiquid();
-    }
-    
-    Serial.println();
-    
-    sendDataToThingspeak();
-  }
+  getPHValue(); // Testing
+  Serial.println();
+  delay(1000);
+//  startTime = millis();
+//
+//  setupWifi();
+//
+//  if ((startTime - prevGetPHValue) >= 5000) {
+//    getPHValue(); 
+//
+//    if (isPHBelowTolerance()) {
+//      addAsamLiquid();
+//    } else if (isPHAboveTolerance()) {
+//      addBasaLiquid();
+//    }
+//    
+//    Serial.println();
+//  }
+//
+//  if ((startTime - prevSentDataTime) >= 15000) {
+//    sendDataToThingspeak();
+//  }
+//  
+//  Serial.println();
 }

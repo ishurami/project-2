@@ -1,4 +1,4 @@
-Board: ESP8266
+Board: ESP8266 (WeMos D1 Mini)
 
 PH Sensor (PH-4502C)
 To	-
@@ -6,14 +6,18 @@ Do	-
 Po	A0
 G	-
 G	GND
-V+	5V
+V+	3.3V
 
-2 Relay Set
+4 Relay Set
 GND	GND
-In1	GPIO 04
-In2	GPIO 05
+In1	GPIO 03 / RX (Mixer)
+In2	GPIO 04 / D2 (Asam)
+In3	GPIO 05 / D1 (Basa)
+In4	-
 VCC	5V
 
 Infos
 - Short BNC prob of PH-4502C module to get voltage at PH 7.
 - Offset potentiometer near the BNC prob.
+- Get analogRead of Po (A0) and save it in buf[100] array.
+  After that, sort from least to greater and get avarage of value number 25 to 75.
