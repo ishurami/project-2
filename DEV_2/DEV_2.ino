@@ -99,14 +99,14 @@ void getPHValue() {
   pHVoltage = encodedVal * (referenceVoltage / 1024);
 
   // Convert PH Voltage to PH Value
-  pHVal = 7 + ((PH7 - pHVoltage) / pHStep);
+  pHVal = 7 + ((pH7 - pHVoltage) / pHStep);
 
   Serial.print("ADC Val: ");
   Serial.print(encodedVal);
   Serial.print(" | PH Vol: ");
   Serial.print(pHVoltage);
   Serial.print(" | PH: ");
-  Serial.print(pHVal);
+  Serial.println(pHVal);
   
   pHStatus = String("PH in tolerance range.");
 }
@@ -132,7 +132,7 @@ void mixLiquid() {
 
 void addAsamLiquid() {
   digitalWrite(ASAM_MOTOR_PIN, LOW);
-  Serial.print(" | Asam Motor ON");
+  Serial.print("Action: Asam Motor ON");
   pHStatus = String("Adding acid liquid...");
   delay(onTimeAddLiquid);
   digitalWrite(ASAM_MOTOR_PIN, HIGH);
@@ -141,7 +141,7 @@ void addAsamLiquid() {
 
 void addBasaLiquid() {
   digitalWrite(BASA_MOTOR_PIN, LOW);
-  Serial.print(" | Basa Motor ON");
+  Serial.print("Action: Basa Motor ON");
   pHStatus = String("Adding base liquid...");
   delay(onTimeAddLiquid);
   digitalWrite(BASA_MOTOR_PIN, HIGH);
